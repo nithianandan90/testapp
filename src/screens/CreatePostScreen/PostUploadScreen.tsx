@@ -4,7 +4,7 @@ import React from 'react';
 const PostUploadScreen = () => {
   return (
     <View>
-      <Text>PostUploadScreen</Text>
+      <Text>Test Screen</Text>
     </View>
   );
 };

@@ -4,7 +4,7 @@ import React from 'react';
 const CameraScreen = () => {
   return (
     <View>
-      <Text>CameraScreen</Text>
+      <Text>Test SCreen</Text>
     </View>
   );
 };
