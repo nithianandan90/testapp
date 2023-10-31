@@ -1,23 +1,47 @@
-type Like @model @auth(rules: [{allow: public}]) {
+type Like
+  @model
+  @auth(rules: [{allow: private, operations: [read]}, {allow: owner}]) {
   id: ID!
   userID: ID! @index(name: "byUser")
-  postID: ID! @index(name: "byPost")
+  postID: ID!
+    @index(
+      name: "byPost"
+      queryField: "likesForPostByUser"
+      sortKeyFields: ["userID"]
+    )
   User: User @belongsTo(fields: ["userID"])
   Post: Post @belongsTo(fields: ["postID"])
 }
 
-type Comment @model @auth(rules: [{allow: public}]) {
+type Comment
+  @model
+  @auth(rules: [{allow: private, operations: [read]}, {allow: owner}]) {
   id: ID!
   comment: String!
+  createdAt: AWSDateTime!
   userID: ID! @index(name: "byUser")
-  postID: ID! @index(name: "byPost")
+  postID: ID!
+    @index(
+      name: "byPost"
+      queryField: "commentsForPost"
+      sortKeyFields: ["createdAt"]
+    )
   User: User @belongsTo(fields: ["userID"])
   Post: Post @belongsTo(fields: ["postID"])
 }
 
-type Post @model @auth(rules: [{allow: public}]) {
+type Post
+  @model
+  @auth(rules: [{allow: private, operations: [read]}, {allow: owner}]) {
   id: ID!
-  desription: String
+  createdAt: AWSDateTime!
+  type: String!
+    @index(
+      name: "postByDate"
+      queryField: "postByDate"
+      sortKeyFields: ["createdAt"]
+    )
+  description: String
   image: String
   images: [String!]
   video: String
@@ -29,7 +53,9 @@ type Post @model @auth(rules: [{allow: public}]) {
   Comments: [Comment] @hasMany(indexName: "byPost", fields: ["id"])
 }
 
-type User @model @auth(rules: [{allow: public}]) {
+type User
+  @model
+  @auth(rules: [{allow: private, operations: [read]}, {allow: owner}]) {
   id: ID!
   name: String!
   email: String
@@ -37,11 +63,16 @@ type User @model @auth(rules: [{allow: public}]) {
   username: String
     @index(name: "usersByUsername", queryField: "usersByUsername")
   website: AWSURL
-  nofPosts: Int!
-  nofFollowers: Int!
-  nofFollowings: Int!
+  nofPosts: Int
+  nofFollowers: Int
+  nofFollowings: Int
   image: String
   Posts: [Post] @hasMany(indexName: "byUser", fields: ["id"])
   Comments: [Comment] @hasMany(indexName: "byUser", fields: ["id"])
   Likes: [Like] @hasMany(indexName: "byUser", fields: ["id"])
+}
+
+type Subscription {
+  onCreateCommentByPostId(postID: ID!): Comment
+    @aws_subscribe(mutations: ["createComment"])
 }

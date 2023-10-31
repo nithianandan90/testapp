@@ -1,0 +1,14 @@
+{
+  "resourceName": "storage",
+  "policyUUID": "fd704b07",
+  "bucketName": "instalearning785bfdddac3a40a9be890ad99482a43f",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

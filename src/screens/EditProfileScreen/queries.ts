@@ -35,7 +35,7 @@ export const updateUser = gql`
       username
       bio
       website
-
+      image
       createdAt
       updatedAt
       _version

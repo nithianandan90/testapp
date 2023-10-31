@@ -7,6 +7,7 @@ import {
   DeleteUserMutationVariables,
   GetUserQuery,
   GetUserQueryVariables,
+  UpdateUserInput,
   UpdateUserMutation,
   UpdateUserMutationVariables,
   User,
@@ -20,10 +21,11 @@ import {useAuthContext} from '../../contexts/AuthContext';
 import ApiErrorMessage from '../../components/ApiErrorMessage';
 import {useNavigation} from '@react-navigation/native';
 import {Alert} from 'react-native';
-import {Auth} from 'aws-amplify';
+import {Auth, Storage} from 'aws-amplify';
 import styles from './styles';
 import {DEFAULT_USER_IMAGE} from '../../config';
 import CustomInput from './CustomInput';
+import {v4 as uuidv4} from 'uuid';
 
 const URL_REGEX = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
 
@@ -34,7 +36,10 @@ type IEditableUser = Pick<User, IEditableUserField>;
 const newUser: IEditableUser = user;
 
 const EditProfileScreen = () => {
-  const [selectedPhoto, setSelectedPhoto] = useState<Asset | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  const [progress, setProgress] = useState(0);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   const {control, handleSubmit, setValue} = useForm<IEditableUser>();
 
@@ -73,14 +78,22 @@ const EditProfileScreen = () => {
     setValue('username', user?.username || '');
     setValue('website', user?.website || '');
     setValue('bio', user?.bio || '');
+
+    if (user?.image) {
+      Storage.get(user.image).then(setImageUri);
+    }
   }, [user]);
 
   const onSubmit = async (formData: IEditableUser) => {
-    console.log(formData, user?._version, userId);
+    const input: UpdateUserInput = {
+      id: userId,
+      ...formData,
+      _version: user?._version,
+    };
 
-    const input = {id: userId, ...formData, _version: user?._version};
-
-    console.log(input);
+    if (selectedPhoto) {
+      input.image = await uploadMedia(selectedPhoto);
+    }
 
     await runUpdateUser({
       variables: {
@@ -150,10 +163,36 @@ const EditProfileScreen = () => {
       {mediaType: 'photo'},
       ({didCancel, errorCode, errorMessage, assets}) => {
         if (!didCancel && !errorCode && assets && assets.length > 0) {
-          setSelectedPhoto(assets[0]);
+          console.log(assets[0]?.uri);
+          setSelectedPhoto(assets[0]?.uri || null);
         }
       },
     );
+  };
+
+  const uploadMedia = async (uri: string) => {
+    try {
+      // get the blob of file from uri
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const uriParts = uri.split('.');
+
+      const extension = uriParts[uriParts.length - 1];
+      // upload the file to S3
+
+      console.log('filed path', `${uuidv4()}.${extension}`);
+
+      const s3Response = await Storage.put(`${uuidv4()}.${extension}`, blob, {
+        progressCallback(newProgress) {
+          setProgress(newProgress.loaded / newProgress.total);
+        },
+      });
+
+      return s3Response.key;
+    } catch (e) {
+      Alert.alert('Error uploading the file');
+    }
   };
 
   if (loading) {
@@ -172,7 +211,7 @@ const EditProfileScreen = () => {
   return (
     <View style={styles.page}>
       <Image
-        source={{uri: selectedPhoto?.uri || user?.image || DEFAULT_USER_IMAGE}}
+        source={{uri: selectedPhoto || imageUri || DEFAULT_USER_IMAGE}}
         style={styles.avatar}
       />
       <Text onPress={onChangePhoto} style={styles.textButton}>

@@ -1,30 +1,52 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import colors from '../../theme/colors';
 import fonts from '../../theme/fonts';
 import {useState} from 'react';
 import {Comment as CommentType} from '../../API';
 import {DEFAULT_USER_IMAGE} from '../../config';
+import Dayjs from 'dayjs';
+import UserImage from '../UserImage';
 
 interface ICommentProps {
   comment: CommentType;
-  includeDetails: boolean;
+  includeDetails?: boolean;
+  isNew?: boolean;
 }
 
-const Comment = ({comment, includeDetails = false}: ICommentProps) => {
+const Comment = ({
+  comment,
+  includeDetails = false,
+  isNew = false,
+}: ICommentProps) => {
+  const dayjs = require('dayjs');
+  const relativeTime = require('dayjs/plugin/relativeTime');
+  dayjs.extend(relativeTime);
   const [isLiked, setIsLiked] = useState(false);
 
   const toggleLike = () => {
     setIsLiked(v => !v);
   };
 
+  if (!comment) {
+    return <ActivityIndicator />;
+  }
+
   return (
     <View style={styles.comment}>
       {includeDetails && (
-        <Image
-          source={{uri: comment.User?.image || DEFAULT_USER_IMAGE}}
-          style={styles.avatar}
-        />
+        <UserImage imageKey={comment.User?.image || undefined} width={40} />
+        // <Image
+        //   source={{uri: comment.User?.image || DEFAULT_USER_IMAGE}}
+        //   style={styles.avatar}
+        // />
       )}
       <View style={styles.middleColumn}>
         <Text style={styles.commentText}>
@@ -33,7 +55,10 @@ const Comment = ({comment, includeDetails = false}: ICommentProps) => {
         </Text>
         {includeDetails && (
           <View style={styles.footer}>
-            <Text style={styles.footerText}>2d</Text>
+            {isNew && <Text style={styles.new}>new</Text>}
+            <Text style={styles.footerText}>
+              {dayjs(comment.createdAt).fromNow()}
+            </Text>
             <Text style={styles.footerText}>5 Likes</Text>
             <Text style={styles.footerText}>Reply</Text>
           </View>
@@ -86,5 +111,13 @@ const styles = StyleSheet.create({
   },
   footerText: {
     marginRight: 10,
+  },
+  new: {
+    backgroundColor: colors.primary,
+    color: colors.white,
+    paddingHorizontal: 5,
+    marginRight: 5,
+    borderRadius: 5,
+    overflow: 'hidden',
   },
 });

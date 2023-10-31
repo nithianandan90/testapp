@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import {StyleSheet} from 'react-native';
 import Navigation from './src/navigation';
 import {Amplify} from 'aws-amplify';
@@ -6,16 +7,22 @@ import config from './src/aws-exports';
 import colors from './src/theme/colors';
 import AuthContextProvider from './src/contexts/AuthContext';
 import Client from './src/apollo/Client';
+import {MenuProvider} from 'react-native-popup-menu';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 Amplify.configure(config);
 
 const App = () => {
   return (
-    <AuthContextProvider>
-      <Client>
-        <Navigation />
-      </Client>
-    </AuthContextProvider>
+    <SafeAreaProvider>
+      <MenuProvider>
+        <AuthContextProvider>
+          <Client>
+            <Navigation />
+          </Client>
+        </AuthContextProvider>
+      </MenuProvider>
+    </SafeAreaProvider>
   );
 };
 

@@ -1,20 +1,53 @@
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Alert, Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import React, {useState} from 'react';
 import colors from '../../theme/colors';
 import fonts from '../../theme/fonts';
+import {useAuthContext} from '../../contexts/AuthContext';
+import {useMutation, useQuery} from '@apollo/client';
+import {createComment, getUser} from './queries';
+import {
+  CreateCommentMutation,
+  CreateCommentMutationVariables,
+  GetUserQuery,
+  GetUserQueryVariables,
+} from '../../API';
+import {DEFAULT_USER_IMAGE} from '../../config';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import useCommentsService from '../../services/CommentsService/CommentsService';
 
-const Input = () => {
+interface IInput {
+  postId: string;
+}
+
+const Input = (props: IInput) => {
+  const {postId} = props;
+
   const [newComment, setNewComment] = useState('new comment');
+  //get the user image
+
+  const {userId} = useAuthContext();
+
+  const insets = useSafeAreaInsets();
+
+  const {onCreateComment} = useCommentsService(postId);
+
+  //query the user image
+  const {data} = useQuery<GetUserQuery, GetUserQueryVariables>(getUser, {
+    variables: {id: userId},
+  });
+
   const onPost = () => {
-    console.warn('Posting the comment', newComment);
+    onCreateComment(newComment);
+
+    // console.warn('Posting the comment', newComment);
     setNewComment('');
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, {paddingBottom: insets.bottom}]}>
       <Image
         source={{
-          uri: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/1.jpg',
+          uri: data?.getUser?.image || DEFAULT_USER_IMAGE,
         }}
         style={styles.image}
       />
@@ -25,7 +58,9 @@ const Input = () => {
         multiline={true}
         placeholder="Write your comment..."
       />
-      <Text onPress={onPost} style={styles.button}>
+      <Text
+        onPress={onPost}
+        style={[styles.button, {bottom: insets.bottom + 7}]}>
         POST
       </Text>
     </View>

@@ -9,29 +9,24 @@ import {
 } from 'react-native';
 import React, {useRef, useState, useEffect} from 'react';
 import FeedPost from '../../components/FeedPosts/FeedPost';
-import posts from '../../assets/data/post.json';
 import {useQuery} from '@apollo/client';
-import {listPosts} from './queries';
-import {ListPostsQuery, ListPostsQueryVariables} from '../../API';
+import {postByDate} from './queries';
+import {
+  ModelSortDirection,
+  PostByDateQuery,
+  PostByDateQueryVariables,
+} from '../../API';
 import ApiErrorMessage from '../../components/ApiErrorMessage';
-import {API, graphqlOperation} from 'aws-amplify';
 
 const HomeScreen = () => {
   const [activePostId, setActivePostId] = useState<string | null>(null);
-  const {data, loading, error, refetch} = useQuery<
-    ListPostsQuery,
-    ListPostsQueryVariables
-  >(listPosts);
-  // const [posts, setPosts] = useState([]);
-
-  // const fetchPosts = async () => {
-  //   const response = await API.graphql(graphqlOperation(listPosts));
-  //   setPosts(response.data.listPosts.items);
-  // };
-
-  // useEffect(() => {
-  //   fetchPosts();
-  // }, []);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const {data, loading, error, refetch, fetchMore} = useQuery<
+    PostByDateQuery,
+    PostByDateQueryVariables
+  >(postByDate, {
+    variables: {type: 'POST', sortDirection: ModelSortDirection.DESC, limit: 5},
+  });
 
   const viewabilityConfig: ViewabilityConfig = {
     itemVisiblePercentThreshold: 51,
@@ -47,7 +42,28 @@ const HomeScreen = () => {
     },
   );
 
-  console.log(data);
+  const nextToken = data?.postByDate?.nextToken;
+
+  const loadMore = async () => {
+    console.log('loading more', nextToken);
+
+    if (!nextToken || isFetchingMore) {
+      return;
+    }
+
+    setIsFetchingMore(true);
+
+    const response = await fetchMore({variables: {nextToken}});
+
+    // console.log(
+    //   'response',
+    //   JSON.stringify(response?.data?.commentsForPost?.items, null, 2),
+    // );
+
+    setIsFetchingMore(false);
+  };
+
+  // console.log(data);
   if (loading) {
     return <ActivityIndicator />;
   }
@@ -63,7 +79,11 @@ const HomeScreen = () => {
     );
   }
 
-  const posts = data?.listPosts?.items || [];
+  // console.log('data', data?.postByDate?.items);
+
+  const posts = (data?.postByDate?.items || []).filter(post => !post?._deleted);
+
+  // console.log(JSON.stringify(posts, null, 2));
 
   return (
     <View>
@@ -77,6 +97,9 @@ const HomeScreen = () => {
         onViewableItemsChanged={onViewableItemsChanged.current}
         onRefresh={() => refetch()}
         refreshing={loading}
+        onEndReached={() => {
+          loadMore();
+        }}
       />
     </View>
   );

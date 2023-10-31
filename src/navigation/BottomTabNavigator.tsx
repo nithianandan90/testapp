@@ -14,6 +14,7 @@ import {
 import SearchTabNavigator from './SearchTabNavigator';
 import {Text} from 'react-native';
 import CameraScreen from '../screens/CameraScreen';
+import UploadStackNavigator from './UploadStackNavigator';
 
 const Tab = createBottomTabNavigator<SearchTabNavigatorParamList>();
 
@@ -46,7 +47,7 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen
         name="Upload"
-        component={CameraScreen}
+        component={UploadStackNavigator}
         options={{
           tabBarIcon: ({color, size}) => (
             <MaterialCommunityIcons
