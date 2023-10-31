@@ -17,7 +17,7 @@ const userExists = async id => {
   };
 
   try {
-    const response = await docClient.get(params).promise();
+    const response = await docClient.get(params).andler();
     return !!response?.Item;
   } catch (e) {
     return false;
@@ -45,7 +45,7 @@ const saveUser = async user => {
   };
 
   try {
-    await docClient.put(params).promise();
+    await docClient.put(params).andler();
   } catch (e) {
     console.log(e);
   }
@@ -54,8 +54,7 @@ const saveUser = async user => {
 exports.handler = async (event, context) => {
   // insert code to be executed by your lambda trigger
 
-  console.log('lambda function working');
-  console.log(event);
+  console.log('lambda function working and is updated');
 
   if (!event?.request?.userAttributes) {
     console.log('no user data available');
