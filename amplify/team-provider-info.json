@@ -62,5 +62,37 @@
         "storage": {}
       }
     }
+  },
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-instalearning-prod-93726-authRole",
+      "UnauthRoleArn": "arn:aws:iam::424317972414:role/amplify-instalearning-prod-93726-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::424317972414:role/amplify-instalearning-prod-93726-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-instalearning-prod-93726-deployment",
+      "UnauthRoleName": "amplify-instalearning-prod-93726-unauthRole",
+      "StackName": "amplify-instalearning-prod-93726",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:424317972414:stack/amplify-instalearning-prod-93726/10eb1fd0-778e-11ee-87d1-06989caf3026",
+      "AmplifyAppId": "d3rx0x6clcton8",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-instalearning-prod-93726-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+    },
+    "categories": {
+      "auth": {
+        "instalearning": {}
+      },
+      "function": {
+        "instalearningPostConfirmation": {
+          "deploymentBucketName": "amplify-instalearning-prod-93726-deployment",
+          "s3Key": "amplify-builds/instalearningPostConfirmation-53736b6e5859744a7770-build.zip"
+        },
+        "instalearning": {}
+      },
+      "api": {
+        "instalearning": {}
+      },
+      "storage": {
+        "storage": {}
+      }
+    }
   }
 }
