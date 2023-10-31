@@ -17,7 +17,7 @@ const userExists = async id => {
   };
 
   try {
-    const response = await docClient.get(params).andler();
+    const response = await docClient.get(params).promise();
     return !!response?.Item;
   } catch (e) {
     return false;
@@ -45,7 +45,7 @@ const saveUser = async user => {
   };
 
   try {
-    await docClient.put(params).andler();
+    await docClient.put(params).promise();
   } catch (e) {
     console.log(e);
   }
